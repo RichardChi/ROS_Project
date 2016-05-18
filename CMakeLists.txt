@@ -8,6 +8,11 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  pcl_ros
+  sensor_msgs
+  pcl_conversions
+  message_generation
+
 )
 
 ## System dependencies are found with CMake's conventions
@@ -128,16 +133,16 @@ include_directories(
 # add_dependencies(nmap ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(nmap_node src/nmap_node.cpp)
+ add_executable(nmap_node src/mapping.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(nmap_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(nmap_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(nmap_node
-#   ${catkin_LIBRARIES}
-# )
+ target_link_libraries(nmap_node
+   ${catkin_LIBRARIES}
+ )
 
 #############
 ## Install ##

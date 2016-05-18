@@ -15,8 +15,8 @@
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <velodyne_pointcloud/point_types.h>
-#include <velodyne_pointcloud/rawdata.h>
+//#include <velodyne_pointcloud/point_types.h>
+//#include <velodyne_pointcloud/rawdata.h>
 
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
@@ -27,6 +27,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/registration/ndt.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/filters/radius_outlier_removal.h>
 #include <pcl/filters/approximate_voxel_grid.h>
 #include <pcl/filters/voxel_grid.h>
 
@@ -78,6 +79,7 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 	double r;
     	pcl::PointXYZI p; 
     	pcl::PointCloud<pcl::PointXYZI> tmp, scan;
+    	//pcl::PointCloud<pcl::PointXYZI>::Ptr tmp(new pcl::PointCloud<pcl::PointXYZI>());
    	pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
    	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZI>());
     	pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_scan_ptr (new pcl::PointCloud<pcl::PointXYZI>());
@@ -93,10 +95,11 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
    	pcl::removeNaNFromPointCloud(tmp,tmp, indices);
    	indices.clear();
    	//OutlierRemoval filtering
+   	/*
    	int tag = 0;
    	if (tag == 0)
    	{
-   		*cloud_filtered = tmp;
+   		*cloud_filtered = *tmp;
    	}
   	if (tag == 1)
   	{
@@ -117,10 +120,10 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 		outrem.setMinNeighborsInRadius (2);
 		// apply filter
 		outrem.filter (*cloud_filtered);
-	 }
+	 }*/
 
 
-    	for (pcl::PointCloud<pcl::PointXYZI>::const_iterator item = *cloud_filtered.begin(); item != *cloud_filtered.end(); item++){
+    	for (pcl::PointCloud<pcl::PointXYZI>::const_iterator item = tmp.begin(); item != tmp.end(); item++){
     		p.x = (double) item->x;
     		p.y = (double) item->y;
     		p.z = (double) item->z;
@@ -224,9 +227,9 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
     	}
     
     	sensor_msgs::PointCloud2::Ptr map_msg_ptr(new sensor_msgs::PointCloud2);
-    	pcl::toROSMsg(*map_ptr, *map_msg_ptr);
-    	*map_msg_ptr.header.frame_id = "map";
-    	*map_msg_ptr.header.stamp = scan_time;
+    	map_ptr->header.frame_id = "map";
+    	//map_ptr->header.stamp = scan_time;
+    	pcl::toROSMsg(*map_ptr, *map_msg_ptr);    	
     	ndt_map_pub.publish(*map_msg_ptr);
     
     	q.setRPY(current_pos.roll, current_pos.pitch, current_pos.yaw);
@@ -245,8 +248,41 @@ static void points_callback(const sensor_msgs::PointCloud2::ConstPtr& input)
 
 }
 
- int main(int argc, char const *argv[])
+ int main(int argc, char **argv)
 {
+	previous_pos.x = 0.0;
+    	previous_pos.y = 0.0;
+    	previous_pos.z = 0.0;
+    	previous_pos.roll = 0.0;
+    	previous_pos.pitch = 0.0;
+    	previous_pos.yaw = 0.0;
+
+    	current_pos.x = 0.0;
+    	current_pos.y = 0.0;
+    	current_pos.z = 0.0;
+    	current_pos.roll = 0.0;
+    	current_pos.pitch = 0.0;
+    	current_pos.yaw = 0.0;
+
+    	guess_pos.x = 0.0;
+    	guess_pos.y = 0.0;
+    	guess_pos.z = 0.0;
+    	guess_pos.roll = 0.0;
+    	guess_pos.pitch = 0.0;
+    	guess_pos.yaw = 0.0;
+
+    	added_pos.x = 0.0;
+    	added_pos.y = 0.0;
+   	added_pos.z = 0.0;
+    	added_pos.roll = 0.0;
+    	added_pos.pitch = 0.0;
+    	added_pos.yaw = 0.0;
+
+    	offset_x = 0.0;
+    	offset_y = 0.0;
+    	offset_z = 0.0;
+    	offset_yaw = 0.0;
+
 	ros::init(argc, argv, "mapping");
 
 	ros::NodeHandle nh;
